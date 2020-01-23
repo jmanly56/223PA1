@@ -23,19 +23,10 @@ class Game
     private:
         /* Types */
         enum CSV { Commands, Profiles };
-        enum MenuOptions
-        {
-                Rules=1,
-                Play,
-                Load,
-                Add,
-                Remove,
-                Exit
-        };
+        enum MenuOptions { Rules = 1, Play, Load, Add, Remove, Exit };
         typedef std::string Description;
         typedef std::string Command;
-        struct Question 
-        {
+        struct Question {
                 Command cmd;
                 Description descriptions[3];
                 Description answer;
@@ -54,11 +45,12 @@ class Game
         void cleanup();
         void loadFile(CSV type);
         void insertAtFront(Profile &profile);
-        void parseLine(std::string line, std::string &data1, std::string &data2);
+        void parseLine(std::string line, std::string &data1,
+                       std::string &data2);
         void saveFile(CSV type);
         void showRules();
         void showMenu();
-        void playGame(bool loaded=false);
+        void playGame(bool loaded = false);
         int getNumQuestions();
         Question getQuestion();
         void createQuestion(Node<Command, Description> *node, Question &q);

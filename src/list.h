@@ -138,34 +138,37 @@ class List
         }
 
         /*
-         * Uses a stringstream to create a 
+         * Uses a stringstream to create a
          * newline seperated list of CSV values.
          * It assumes that the data within the node will
          * overload the << operator if it is a non-standard
          * type. It then outputs the string created by ss.
-        */
+         */
 
         std::string toString() const
         {
                 std::stringstream ss;
                 ss << "";
-                Node<T,U> *ptr = head;
-                while(ptr != NULL){
-                        ss << ptr->data1 << ",\"" << ptr->data2 <<"\"" << std::endl;      
+                Node<T, U> *ptr = head;
+                while (ptr != NULL) {
+                        ss << ptr->data1 << ",\"" << ptr->data2 << "\""
+                           << std::endl;
                         ptr = ptr->next;
                 }
                 return ss.str();
         }
-        size_t getSize() const 
+        size_t getSize() const
         {
                 return num_nodes;
         }
-        Node<T,U> *at(unsigned int index) {
+        Node<T, U> *at(unsigned int index)
+        {
                 Node<T, U> *ptr = head;
-                for(size_t i = 0; i < getSize(); i++) {
-                        if(i == index)
+                for (size_t i = 0; i < getSize(); i++) {
+                        if (i == index)
                                 return ptr;
-                        else ptr = ptr->next;
+                        else
+                                ptr = ptr->next;
                 }
                 return nullptr;
         }

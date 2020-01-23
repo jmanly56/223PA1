@@ -63,13 +63,13 @@ void Game::run()
                         playGame(loaded);
                         break;
                 case Add:
-                        //TODO Addcommand
+                        // TODO Addcommand
                         break;
                 case Remove:
-                        //TODO Remove command
+                        // TODO Remove command
                         break;
                 case Exit:
-                        //TODO save and exit
+                        // TODO save and exit
                         is_running = false;
                         break;
                 default:
@@ -176,16 +176,17 @@ void Game::showRules()
 {
         char input = '0';
         std::cout << "Rules: " << std::endl;
-        std::cout << "A Linux command will be displayed, and the goal is to"
+        std::cout
+                << "A Linux command will be displayed, and the goal is to"
                 << std::endl
-                << "guess which of three possible choices is the correct" 
+                << "guess which of three possible choices is the correct"
                 << std::endl
                 << "description of that command. If you guess correctly,"
                 << std::endl
-                << "you will get one point. If you guess incorrectly, you will" 
+                << "you will get one point. If you guess incorrectly, you will"
                 << std::endl
                 << "lose a point." << std::endl;
-        while(input != 'y') {
+        while (input != 'y') {
                 std::cout << "Enter y to continue" << std::endl;
                 std::cin >> input;
         }
@@ -218,7 +219,8 @@ void Game::playGame(bool loaded)
         }
         for (int i = 0; i < num_questions; i++) {
                 current->score += askQuestion();
-                std::cout << "Your current score: " << current->getScore() << "."; 
+                std::cout << "Your current score: " << current->getScore()
+                          << ".";
                 system("clear");
         }
         current = nullptr;
@@ -228,18 +230,18 @@ int Game::askQuestion()
 {
         Question q = getQuestion();
         std::cout << "Player: " << current->getName() << "\t"
-                << "Score: " << current->getScore() << std::endl;
+                  << "Score: " << current->getScore() << std::endl;
         std::cout << q.cmd << std::endl;
         bool valid = false;
         int answer = 0;
         for (size_t i = 0; i < 3; i++) {
-                std::cout << i+1 << ". " << q.descriptions[i] << std::endl;
+                std::cout << i + 1 << ". " << q.descriptions[i] << std::endl;
         }
         while (!valid) {
                 std::cout << "Enter your answer: ";
                 std::cin >> answer;
                 if (answer >= 1 && answer <= 3) {
-                        if (q.descriptions[answer-1] == q.answer) {
+                        if (q.descriptions[answer - 1] == q.answer) {
                                 std::cout << "You guessed correctly!"
                                           << std::endl;
                                 std::cout << "You gain one point!" << std::endl;
@@ -264,7 +266,8 @@ int Game::getNumQuestions()
         bool valid = false;
         int answer = 0;
         while (!valid) {
-                std::cout << "How many questions would you like to have? (5-30):";
+                std::cout
+                        << "How many questions would you like to have? (5-30):";
                 std::cin >> answer;
                 if (answer >= 5 && answer <= 30)
                         return answer;
@@ -277,8 +280,7 @@ int Game::getNumQuestions()
 Game::Question Game::getQuestion()
 {
         static std::vector<int> usedCommands;
-        if(list_edited)
-        {
+        if (list_edited) {
                 usedCommands.clear();
                 list_edited = false;
         }
@@ -288,7 +290,7 @@ Game::Question Game::getQuestion()
         bool found = false;
         while (!valid) {
                 rnd = rand() % static_cast<int>(list->getSize());
-                if(usedCommands.size() > 0) {
+                if (usedCommands.size() > 0) {
                         for (const auto a : usedCommands) {
                                 found = rnd == a;
                         }
@@ -318,7 +320,7 @@ void Game::createQuestion(Node<Command, Description> *node, Question &q)
                        || q.descriptions[i - 2] == list->at(rnd)->data2) {
                         rnd = rand() % list->getSize();
                 }
-                q.descriptions[i-1] = list->at(rnd)->data2;
+                q.descriptions[i - 1] = list->at(rnd)->data2;
         }
         rnd = rand() % 3;
         Description tmp = q.descriptions[0];
@@ -332,7 +334,7 @@ Profile *Game::createUser()
         char inp;
         bool correct = false;
         while (!correct) {
-                std::cout << "Enter a profile name(They are case-sensitive): " ;
+                std::cout << "Enter a profile name(They are case-sensitive): ";
                 std::cin >> name;
                 std::cout << "Is " << name << " correct? y/n: ";
                 std::cin >> inp;
