@@ -1,4 +1,5 @@
 #include "game.h"
+#include <string>
 #include <cctype>
 #include <cstdio>
 #include <cstdlib>
@@ -48,10 +49,8 @@ void Game::run()
         bool is_running = true;
         int answer = 0;
         while (is_running) {
-                system("clear");
                 showMenu();
                 std::cin >> answer;
-                system("clear");
                 switch (answer) {
                 case Rules:
                         showRules();
@@ -66,10 +65,10 @@ void Game::run()
                         playGame(loaded);
                         break;
                 case Add:
-                        // TODO Addcommand
+                        getNewCommand(Add);
                         break;
                 case Remove:
-                        // TODO Remove command
+                        getNewCommand(Remove);
                         break;
                 case Exit:
                         exit();
@@ -228,8 +227,7 @@ void Game::playGame(bool loaded)
                 std::cerr << "Error  parsing number of questions" << std::endl;
                 return;
         }
-        for (int i = 0; i < num_questions; i++) {
-                system("clear");
+        for (int i = 0; i < num_questions; i++) {    
                 current->score += askQuestion();
                 std::cout << "Continue? y/n:" << std::endl;
                 while(true)
@@ -438,30 +436,43 @@ void Game::getNewCommand(MenuOptions option)
         char input = '0';
         bool valid = false;
         while(!valid) {
+top:
                 std::cout << "Enter the name of the command: ";
                 std::cin >> cmd;
                 std::cout << std::endl;
-                std::cout << "Enter the description: ";
-                std::cin >> desc;
-                std::cout << std::endl;
+                if(Remove) {
+                        std::cout << "Enter the description: ";
+                        std::cin >> desc;
+                        std::cout << std::endl;
+                }
                 std::cout << "Is " << cmd << " correct? y/n: " << std::endl;
+                std::cin >> std::ws;
                 std::cin >> input;
                 valid = input == 'y';
         }
         if(option == Add)
                 valid = addCommand(cmd, desc);
         else if(option == Remove)
-                valid = removeCommand(cmd, desc);
+                valid = removeCommand(cmd);
         else return;
         if(valid)
                 std::cout << "Operation successful!" << std::endl;
-        else std::cout << "There was an error processing your request." << std::endl;
+        else {
+                std::cout << "The program was disinclined to acquiesce to your" 
+                        << "request.\n Means no."
+                        << std::endl;
+                std::cout << "Would you like to try again? y/n: ";
+                std::cin >> std::ws;
+                std::cin >> input;
+                if(input == 'y')
+                        goto top;
+        } 
 }
 
 bool Game::addCommand(const std::string cmd, const std::string desc)
 {
         Node<Command, Description> *ptr = list->find(cmd, desc);
-        if(ptr == nullptr){
+        if(ptr == nullptr || ptr->data1 == cmd){
                 list_edited = true;
                 list->prepend(cmd, desc);
                 return true;
@@ -470,8 +481,10 @@ bool Game::addCommand(const std::string cmd, const std::string desc)
         return false;
 }
 
-bool Game::removeCommand(const std::string cmd, const std::string desc)
+bool Game::removeCommand(const std::string cmd)
 {
-        list_edited = true;
-        return false;
+        list_edited = list->remove(cmd);
+        if(!list_edited)
+                 std::cout << "Command not removed" << std::endl;
+        return list_edited;
 }

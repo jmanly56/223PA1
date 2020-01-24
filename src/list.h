@@ -116,6 +116,34 @@ class List
                 } else
                         return false;
         }
+        bool remove(T data1)
+        {
+                Node<T, U> *ptr = head;
+                Node<T, U> *prev = nullptr, *match = nullptr;
+                while (ptr != nullptr) {
+                        if (ptr->data1 == data1) {
+                                match = ptr;
+                                break;
+                        }
+                        prev = ptr;
+                        ptr = ptr->next;
+                }
+                if (match != nullptr) {
+                        if (prev == nullptr) {
+                                ptr = head->next;
+                                delete head;
+                                head = ptr;
+                        } else {
+                                prev->next = match->next;
+                                delete match;
+                        }
+                        num_nodes--;
+                        return true;
+                } else
+                        return false;
+
+                
+        }
 
         /*
          * Finds the FIRST match of the given data and

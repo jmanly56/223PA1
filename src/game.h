@@ -61,7 +61,7 @@ class Game
         bool loadPreviousGame();
         void getNewCommand(MenuOptions option);
         bool addCommand(const std::string cmd, const std::string desc);
-        bool removeCommand(const std::string cmd, const std::string desc);
+        bool removeCommand(const std::string cmd);
 };
 
 #endif // GAME_H
