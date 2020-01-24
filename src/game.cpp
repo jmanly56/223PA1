@@ -12,6 +12,23 @@
 #include <regex>
 #include <sstream>
 #include <vector>
+/*
+ * ADVANTAGES/DISADVANTAGES: Linked List:
+ * Advantage: You don't need to reallocate the list every time you want to add
+ * a command. You simply create a new node and change where the head points.
+ * Disadvantage: You must go through the entire list to find a specific index.
+ * To get a random node, you must go through the entire list until that number of
+ * nodes have been passed. With an array, you can select a specific index.[O(1)]
+ *
+ * ADVANTAGES/DISADVANTAGES: Array
+ * Advantage: Allowed me to directly access profiles through an index.
+ * Disadvanage: Using an array for something that is going to be added
+ * dynamically is a bad idea. And then to prepend to the zero index? 
+ * That causes you to have to copy the entire array one item at a time
+ * to a new array. It is incredily time ineffcient, especially when you
+ * get to a high n. If it were up to me, I definitely would not have used
+ * an array here. 
+ */
 
 /*
  * Public functions
