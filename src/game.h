@@ -59,8 +59,9 @@ class Game
         Profile *findUser();
         bool nameTaken(std::string name);
         bool loadPreviousGame();
+        void getNewCommand(MenuOptions option);
         bool addCommand(const std::string cmd, const std::string desc);
-        bool removeCommand(const std::string cmd);
+        bool removeCommand(const std::string cmd, const std::string desc);
 };
 
 #endif // GAME_H

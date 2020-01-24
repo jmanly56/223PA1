@@ -4,6 +4,7 @@
 #include <cstdlib>
 #include <ctime>
 #include <fstream>
+#include <ios>
 #include <iostream>
 #include <ostream>
 #include <regex>
@@ -26,7 +27,7 @@ Game::Game()
 
 Game::~Game()
 {
-        cleanup();
+
 }
 
 /*
@@ -60,6 +61,8 @@ void Game::run()
                         break;
                 case Load:
                         loaded = loadPreviousGame();
+                        if(loaded == false)
+                            break;
                         playGame(loaded);
                         break;
                 case Add:
@@ -69,11 +72,12 @@ void Game::run()
                         // TODO Remove command
                         break;
                 case Exit:
-                        // TODO save and exit
+                        exit();
                         is_running = false;
                         break;
                 default:
-                        std::cout << "Input unrecognized" << std::endl;
+                        std::cin.clear();
+                        std::cin.ignore();
                         break;
                 }
         }
@@ -81,6 +85,9 @@ void Game::run()
 
 void Game::exit()
 {
+        saveFile(Commands);
+        saveFile(Profiles);
+        cleanup();
 }
 
 /*
@@ -167,6 +174,8 @@ void Game::saveFile(CSV type)
 
 void Game::parseLine(std::string line, std::string &data1, std::string &data2)
 {
+        std::regex r("[\"]+");
+        line = std::regex_replace(line, r, "");
         std::stringstream ss(line);
         std::getline(ss, data1, ',');
         std::getline(ss, data2, ',');
@@ -201,12 +210,14 @@ void Game::showMenu()
         std::cout << "4. Add Command" << std::endl;
         std::cout << "5. Remove Command" << std::endl;
         std::cout << "6. Save and Exit" << std::endl;
+        std::cout << "Enter your choice: ";
 }
 
 void Game::playGame(bool loaded)
 {
         int num_questions = 0;
         bool valid = loaded;
+        char input = '0';
         while (!valid) {
                 current = createUser();
                 valid = current != nullptr;
@@ -218,10 +229,17 @@ void Game::playGame(bool loaded)
                 return;
         }
         for (int i = 0; i < num_questions; i++) {
-                current->score += askQuestion();
-                std::cout << "Your current score: " << current->getScore()
-                          << ".";
                 system("clear");
+                current->score += askQuestion();
+                std::cout << "Continue? y/n:" << std::endl;
+                while(true)
+                {
+                        std::cin >> input;
+                        if(input == 'y')
+                                break;
+                        else if(input == 'n')
+                                return;
+                }
         }
         current = nullptr;
 }
@@ -250,12 +268,14 @@ int Game::askQuestion()
                                 std::cout << "You answered wrong!" << std::endl;
                                 std::cout << "You lose a point!" << std::endl;
                                 std::cout
-                                        << "The correct answer is:" << q.answer
+                                        << "The correct answer is:\n" << q.answer
                                         << std::endl;
                                 return -1;
                         }
                 } else {
                         std::cout << "Invalid answer" << std::endl;
+                        std::cin.clear();
+                        std::cin.ignore();
                 }
         }
         return 0;
@@ -271,8 +291,11 @@ int Game::getNumQuestions()
                 std::cin >> answer;
                 if (answer >= 5 && answer <= 30)
                         return answer;
-                else
+                else {
                         std::cerr << "Invalid input" << std::endl;
+                        std::cin.clear();
+                        std::cin.ignore();
+                }
         }
         return -1;
 }
@@ -282,17 +305,28 @@ Game::Question Game::getQuestion()
         static std::vector<int> usedCommands;
         if (list_edited) {
                 usedCommands.clear();
+                usedCommands.resize(1);
                 list_edited = false;
+        }
+        if (usedCommands.size() == list->getSize())
+        {
+                usedCommands.clear();
+                usedCommands.resize(1);
         }
         bool valid = false;
         int rnd = 0;
         Question q;
         bool found = false;
         while (!valid) {
-                rnd = rand() % static_cast<int>(list->getSize());
+                srand(time(NULL));
+                found = false;
+                rnd = rand() % list->getSize();
                 if (usedCommands.size() > 0) {
-                        for (const auto a : usedCommands) {
-                                found = rnd == a;
+                        for (const int a : usedCommands) {
+                                if(a == rnd){
+                                        found = true;
+                                        break;
+                                }
                         }
                 }
                 if (found)
@@ -304,8 +338,7 @@ Game::Question Game::getQuestion()
                         createQuestion(ptr, q);
                 }
         }
-        if (usedCommands.size() == list->getSize())
-                usedCommands.clear();
+        
         return q; /* The only way this will return is if valid == true */
 }
 
@@ -386,13 +419,9 @@ bool Game::nameTaken(std::string name)
 bool Game::loadPreviousGame()
 {
         bool valid = false;
-        char answer;
         while (!valid) {
                 Profile *p = findUser();
                 if (p == nullptr) {
-                        std::cout << "Return to main menu? y/n" << std::endl;
-                        std::cin >> answer;
-                        valid = answer == 'y';
                         return false;
                 } else {
                         current = p;
@@ -402,13 +431,46 @@ bool Game::loadPreviousGame()
         return false;
 }
 
+void Game::getNewCommand(MenuOptions option)
+{
+        
+        std::string cmd, desc;
+        char input = '0';
+        bool valid = false;
+        while(!valid) {
+                std::cout << "Enter the name of the command: ";
+                std::cin >> cmd;
+                std::cout << std::endl;
+                std::cout << "Enter the description: ";
+                std::cin >> desc;
+                std::cout << std::endl;
+                std::cout << "Is " << cmd << " correct? y/n: " << std::endl;
+                std::cin >> input;
+                valid = input == 'y';
+        }
+        if(option == Add)
+                valid = addCommand(cmd, desc);
+        else if(option == Remove)
+                valid = removeCommand(cmd, desc);
+        else return;
+        if(valid)
+                std::cout << "Operation successful!" << std::endl;
+        else std::cout << "There was an error processing your request." << std::endl;
+}
+
 bool Game::addCommand(const std::string cmd, const std::string desc)
 {
-        list_edited = true;
+        Node<Command, Description> *ptr = list->find(cmd, desc);
+        if(ptr == nullptr){
+                list_edited = true;
+                list->prepend(cmd, desc);
+                return true;
+        }
+        else std::cout << "That command already exists!" << std::endl;
         return false;
 }
 
-bool Game::removeCommand(const std::string cmd)
+bool Game::removeCommand(const std::string cmd, const std::string desc)
 {
         list_edited = true;
         return false;

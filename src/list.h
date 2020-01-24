@@ -187,7 +187,6 @@ class List
                         delete ptr;
                         ptr = tmp;
                 }
-                delete head;
         }
 };
 
