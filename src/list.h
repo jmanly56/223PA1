@@ -164,6 +164,19 @@ class List
                 }
                 return match;
         }
+        Node<T, U> *find(T data1) const
+        {
+                Node<T, U> *ptr = head;
+                Node<T, U> *match = nullptr;
+                while (ptr != nullptr) {
+                        if (ptr->data1 == data1) {
+                                match = ptr;
+                                break;
+                        }
+                        ptr = ptr->next;
+                }
+                return match;
+        }
 
         /*
          * Uses a stringstream to create a

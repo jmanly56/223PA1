@@ -1,4 +1,5 @@
 #include "game.h"
+#include <limits>
 #include <string>
 #include <cctype>
 #include <cstdio>
@@ -22,7 +23,6 @@ Game::Game()
         srand(time(NULL));
         profiles = nullptr;
         list = nullptr;
-        num_profiles = 0;
         current_arr_size = 0;
 }
 
@@ -82,6 +82,10 @@ void Game::run()
         }
 }
 
+/*
+ * Saves both data sets to files and cleans up the dynamic 
+ * memory.
+ */
 void Game::exit()
 {
         saveFile(Commands);
@@ -100,6 +104,11 @@ void Game::cleanup()
         delete[] profiles;
 }
 
+/*
+ * Depending on the CSV type, either loads the profile
+ * or commands csv files. The commands are a linked list
+ * and the profiles are in an array.
+ */
 void Game::loadFile(CSV type)
 {
         std::string data1, data2, line, path = "";
@@ -125,7 +134,11 @@ void Game::loadFile(CSV type)
                 return;
         }
 }
-
+/*
+ * Puts the specified profile at the front of the profiles array.
+ * This is an incredily ineffcient function, but it was required
+ * to fulfill project requirements.
+ */
 void Game::insertAtFront(Profile &profile)
 {
         if (current_arr_size > 0) {
@@ -144,6 +157,10 @@ void Game::insertAtFront(Profile &profile)
         }
 }
 
+/*
+ * Saves the list or profile array to file. For the commands 
+ * see the list function toString().
+ */
 void Game::saveFile(CSV type)
 {
         std::string path, output;
@@ -171,6 +188,9 @@ void Game::saveFile(CSV type)
         }
 }
 
+/*
+ * Parses out the quotes and splits the line.
+ */
 void Game::parseLine(std::string line, std::string &data1, std::string &data2)
 {
         std::regex r("[\"]+");
@@ -200,6 +220,7 @@ void Game::showRules()
         }
 }
 
+
 void Game::showMenu()
 {
         std::cout << "Main Menu: " << std::endl;
@@ -212,6 +233,11 @@ void Game::showMenu()
         std::cout << "Enter your choice: ";
 }
 
+/*
+ * Get a user(or uses one already loaded) and number of questions.
+ * It then loops and asks however many questions.
+ * See also: createUser(), getNumQuestions(), askQuestion()
+ */
 void Game::playGame(bool loaded)
 {
         int num_questions = 0;
@@ -220,6 +246,12 @@ void Game::playGame(bool loaded)
         while (!valid) {
                 current = createUser();
                 valid = current != nullptr;
+                if(!valid) {
+                        std::cout << "Return to main menu? y/n: ";
+                        std::cin >> input;
+                        if(input == 'y')
+                                return;
+                }
         }
         std::cout << "Playing as " << current->getName() << "." << std::endl;
         num_questions = getNumQuestions();
@@ -242,11 +274,15 @@ void Game::playGame(bool loaded)
         current = nullptr;
 }
 
+/*
+ * Asks a user the question it recieves from the getQuestion()
+ * function. Return 1 or -1 depending on if they get the correct answer.
+ */
 int Game::askQuestion()
 {
         Question q = getQuestion();
         std::cout << "Player: " << current->getName() << "\t"
-                  << "Score: " << current->getScore() << std::endl;
+                << "Score: " << current->getScore() << std::endl;
         std::cout << q.cmd << std::endl;
         bool valid = false;
         int answer = 0;
@@ -259,7 +295,7 @@ int Game::askQuestion()
                 if (answer >= 1 && answer <= 3) {
                         if (q.descriptions[answer - 1] == q.answer) {
                                 std::cout << "You guessed correctly!"
-                                          << std::endl;
+                                        << std::endl;
                                 std::cout << "You gain one point!" << std::endl;
                                 return 1;
                         } else {
@@ -298,6 +334,12 @@ int Game::getNumQuestions()
         return -1;
 }
 
+/*
+ * Asks the user a random question and selects two other
+ * random descriptions. Uses a static vector to keep
+ * track of used commands. Can visually lag trying to find an unused
+ * command. 
+ */
 Game::Question Game::getQuestion()
 {
         static std::vector<int> usedCommands;
@@ -336,10 +378,15 @@ Game::Question Game::getQuestion()
                         createQuestion(ptr, q);
                 }
         }
-        
+
         return q; /* The only way this will return is if valid == true */
 }
 
+/*
+ * Receives a node and creates a question with
+ * two other random descriptions. Returns a Question
+ * struct which is defined in game.h.
+ */
 void Game::createQuestion(Node<Command, Description> *node, Question &q)
 {
         q.cmd = node->data1;
@@ -348,7 +395,7 @@ void Game::createQuestion(Node<Command, Description> *node, Question &q)
         int rnd = rand() % list->getSize();
         for (size_t i = 2; i < 4; i++) {
                 while (node == list->at(rnd)
-                       || q.descriptions[i - 2] == list->at(rnd)->data2) {
+                                || q.descriptions[i - 2] == list->at(rnd)->data2) {
                         rnd = rand() % list->getSize();
                 }
                 q.descriptions[i - 1] = list->at(rnd)->data2;
@@ -359,6 +406,10 @@ void Game::createQuestion(Node<Command, Description> *node, Question &q)
         q.descriptions[rnd] = tmp;
 }
 
+/*
+ * If the requested username is not taken, creates a user on the 
+ * profiles array.
+ */
 Profile *Game::createUser()
 {
         std::string name;
@@ -372,7 +423,12 @@ Profile *Game::createUser()
                 if (inp == 'y') {
                         if (nameTaken(name)) {
                                 std::cout << "That profile name is taken"
-                                          << std::endl;
+                                        << std::endl;
+                                std::cout << "Do you want to try again? y/n: ";
+                                std::cin >> inp;
+                                if(inp == 'n')
+                                        return nullptr;
+
                         } else
                                 correct = true;
                 }
@@ -382,6 +438,11 @@ Profile *Game::createUser()
         return p;
 }
 
+/*
+ * Locates a user in the profiles array. Will continue to prompy until
+ * 1. A profile is made or 
+ * 2. The user quits
+ */
 Profile *Game::findUser()
 {
         std::string name;
@@ -414,9 +475,19 @@ bool Game::nameTaken(std::string name)
         return false;
 }
 
+/*
+ * Prints available profiles. If user enters a valid profile, loads it
+ * to current. Otherwise, it will continue to prompt until the user gives
+ * up.
+ */
 bool Game::loadPreviousGame()
 {
         bool valid = false;
+        std::cout << "Available profiles: " <<std::endl;
+        for(size_t i = 0; i < current_arr_size; i++) {
+                std::cout << profiles[i].getName() << "\t" << profiles[i].getScore()
+                        <<std::endl;
+        }
         while (!valid) {
                 Profile *p = findUser();
                 if (p == nullptr) {
@@ -429,24 +500,30 @@ bool Game::loadPreviousGame()
         return false;
 }
 
+/*
+ * Requests the user to enter a command. Once it is entered
+ * it gives the command to either add or remove command.
+ * Will continue to prompt until a valid command is entered
+ * or the user gives up.
+ */
 void Game::getNewCommand(MenuOptions option)
 {
-        
+
         std::string cmd, desc;
         char input = '0';
         bool valid = false;
         while(!valid) {
 top:
                 std::cout << "Enter the name of the command: ";
-                std::cin >> cmd;
-                std::cout << std::endl;
-                if(Remove) {
+                std::cin.ignore(128, '\n');
+                std::getline(std::cin, cmd);
+                if(option != Remove) {
                         std::cout << "Enter the description: ";
-                        std::cin >> desc;
-                        std::cout << std::endl;
+                        std::getline(std::cin, desc);
                 }
-                std::cout << "Is " << cmd << " correct? y/n: " << std::endl;
-                std::cin >> std::ws;
+                if(cmd.empty())
+                        continue;
+                std::cout << "Is " << cmd << " correct? y/n: "; 
                 std::cin >> input;
                 valid = input == 'y';
         }
@@ -458,20 +535,25 @@ top:
         if(valid)
                 std::cout << "Operation successful!" << std::endl;
         else {
-                std::cout << "The program was disinclined to acquiesce to your" 
-                        << "request.\n Means no."
+                std::cout << "I am disinclined to acquiesce to your" 
+                        << " request.\nMeans no."
                         << std::endl;
                 std::cout << "Would you like to try again? y/n: ";
-                std::cin >> std::ws;
+                std::cin.ignore(128, '\n');
                 std::cin >> input;
                 if(input == 'y')
                         goto top;
         } 
 }
 
+/*
+ * Checks the commands list for the given cmd, and if it detects 
+ * a duplicate returns false. Otherwise, it prepends the new command
+ * to the list.
+ */
 bool Game::addCommand(const std::string cmd, const std::string desc)
 {
-        Node<Command, Description> *ptr = list->find(cmd, desc);
+        Node<Command, Description> *ptr = list->find(cmd);
         if(ptr == nullptr || ptr->data1 == cmd){
                 list_edited = true;
                 list->prepend(cmd, desc);
@@ -481,10 +563,15 @@ bool Game::addCommand(const std::string cmd, const std::string desc)
         return false;
 }
 
+
+/*
+ * Removes the given command from the list, if it is present.
+ * Returns true if sucessfully removed.
+ */
 bool Game::removeCommand(const std::string cmd)
 {
         list_edited = list->remove(cmd);
         if(!list_edited)
-                 std::cout << "Command not removed" << std::endl;
+                std::cout << "Command not removed" << std::endl;
         return list_edited;
 }

@@ -35,7 +35,6 @@ class Game
         const std::string profile_path = "profiles.csv";
         const std::string command_path = "commands.csv";
         size_t current_arr_size;
-        size_t num_profiles;
         bool list_edited;
         Profile *current;
         Profile *profiles; // Going to be an array
