@@ -68,6 +68,7 @@ void Game::run()
         while (is_running) {
                 showMenu();
                 std::cin >> answer;
+                std::cin.ignore(256, '\n');
                 switch (answer) {
                 case Rules:
                         showRules();
@@ -219,7 +220,7 @@ void Game::parseLine(std::string line, std::string &data1, std::string &data2)
 
 void Game::showRules()
 {
-        char input = '0';
+        std::string input;
         std::cout << "Rules: " << std::endl;
         std::cout
                 << "A Linux command will be displayed, and the goal is to"
@@ -231,7 +232,7 @@ void Game::showRules()
                 << "you will get one point. If you guess incorrectly, you will"
                 << std::endl
                 << "lose a point." << std::endl;
-        while (input != 'y') {
+        while (input != "y") {
                 std::cout << "Enter y to continue" << std::endl;
                 std::cin >> input;
         }
@@ -259,14 +260,14 @@ void Game::playGame(bool loaded)
 {
         int num_questions = 0;
         bool valid = loaded;
-        char input = '0';
+        std::string input;
         while (!valid) {
                 current = createUser();
                 valid = current != nullptr;
                 if(!valid) {
                         std::cout << "Return to main menu? y/n: ";
                         std::cin >> input;
-                        if(input == 'y')
+                        if(input == "y")
                                 return;
                 }
         }
@@ -282,9 +283,10 @@ void Game::playGame(bool loaded)
                 while(true)
                 {
                         std::cin >> input;
-                        if(input == 'y')
+                        std::cin.ignore();
+                        if(input == "y")
                                 break;
-                        else if(input == 'n')
+                        else if(input == "n")
                                 return;
                 }
         }
@@ -300,7 +302,7 @@ int Game::askQuestion()
         Question q = getQuestion();
         std::cout << "Player: " << current->getName() << "\t"
                 << "Score: " << current->getScore() << std::endl;
-        std::cout << q.cmd << std::endl;
+        std::cout << "Command: " << q.cmd << std::endl;
         bool valid = false;
         int answer = 0;
         for (size_t i = 0; i < 3; i++) {
@@ -309,6 +311,8 @@ int Game::askQuestion()
         while (!valid) {
                 std::cout << "Enter your answer: ";
                 std::cin >> answer;
+                std::cin.clear();
+                std::cin.ignore();
                 if (answer >= 1 && answer <= 3) {
                         if (q.descriptions[answer - 1] == q.answer) {
                                 std::cout << "You guessed correctly!"
@@ -430,20 +434,21 @@ void Game::createQuestion(Node<Command, Description> *node, Question &q)
 Profile *Game::createUser()
 {
         std::string name;
-        char inp;
+        std::string inp;
         bool correct = false;
         while (!correct) {
                 std::cout << "Enter a profile name(They are case-sensitive): ";
                 std::cin >> name;
                 std::cout << "Is " << name << " correct? y/n: ";
                 std::cin >> inp;
-                if (inp == 'y') {
+                if (inp == "y") {
                         if (nameTaken(name)) {
                                 std::cout << "That profile name is taken"
                                         << std::endl;
                                 std::cout << "Do you want to try again? y/n: ";
                                 std::cin >> inp;
-                                if(inp == 'n')
+                                std::cin.ignore();
+                                if(inp == "n")
                                         return nullptr;
 
                         } else
@@ -463,21 +468,22 @@ Profile *Game::createUser()
 Profile *Game::findUser()
 {
         std::string name;
-        char inp;
+        std::string inp;
         bool correct = false;
         while (!correct) {
                 std::cout << "Enter a profile name(case-sensitive): ";
                 std::cin >> name;
                 std::cout << "Is " << name << " correct? y/n: ";
                 std::cin >> inp;
-                if (inp == 'y') {
+                if (inp == "y") {
                         for (size_t i = 0; i < current_arr_size; i++) {
                                 if (name == profiles[i].getName())
                                         return &profiles[i];
                         }
                         std::cout << "Profile not found. try again? y/n: ";
                         std::cin >> inp;
-                        correct = inp != 'y';
+                        std::cin.ignore();
+                        correct = inp != "y";
                 }
         }
         return nullptr;
@@ -527,7 +533,7 @@ void Game::getNewCommand(MenuOptions option)
 {
 
         std::string cmd, desc;
-        char input = '0';
+        std::string input;
         bool valid = false;
         while(!valid) {
 top:
@@ -542,7 +548,7 @@ top:
                         continue;
                 std::cout << "Is " << cmd << " correct? y/n: "; 
                 std::cin >> input;
-                valid = input == 'y';
+                valid = input == "y";
         }
         if(option == Add)
                 valid = addCommand(cmd, desc);
@@ -558,7 +564,7 @@ top:
                 std::cout << "Would you like to try again? y/n: ";
                 std::cin.ignore(128, '\n');
                 std::cin >> input;
-                if(input == 'y')
+                if(input == "y")
                         goto top;
         } 
 }
